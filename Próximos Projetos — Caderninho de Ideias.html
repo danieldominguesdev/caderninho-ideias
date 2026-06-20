@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<!-- saved from url=(0044)file:///C:/Users/User10/Downloads/index.html -->
+<html lang="pt-BR"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Próximos Projetos — Caderninho de Ideias</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    min-height: 100vh;
+    background: radial-gradient(ellipse 900px 500px at 50% 0%, rgba(255,46,91,0.12), transparent 60%), #0c0d18;
+    color: #fff;
+    font-family: 'Inter', -apple-system, sans-serif;
+    padding: 48px 20px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .container { width: 100%; max-width: 640px; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border: 1.5px solid rgba(255,46,91,0.4);
+    background: rgba(255,46,91,0.08);
+    color: #ff6b89;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 6px 16px;
+    border-radius: 999px;
+    margin-bottom: 18px;
+    letter-spacing: 0.3px;
+  }
+
+  h1 {
+    font-size: 36px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+    line-height: 1.1;
+  }
+  h1 span { color: #ff2e5b; }
+
+  .desc {
+    color: #9aa0bd;
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 28px;
+  }
+
+  .input-box {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 28px;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 70px;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-size: 15px;
+    font-family: inherit;
+    resize: vertical;
+    line-height: 1.5;
+  }
+  textarea::placeholder { color: #5a5e78; }
+
+  .input-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+
+  button.save-btn {
+    background: linear-gradient(135deg, #ff3a63, #e8174b);
+    border: none;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 10px 22px;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 8px 20px -6px rgba(255,46,91,0.5);
+    font-family: inherit;
+  }
+  button.save-btn:hover { filter: brightness(1.08); }
+
+  .empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    color: #6b7094;
+    font-size: 15px;
+    border: 1px dashed rgba(255,255,255,0.1);
+    border-radius: 16px;
+  }
+
+  .idea-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .idea-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .idea-text {
+    flex: 1;
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 6px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .idea-date {
+    font-size: 12px;
+    color: #6b7094;
+    font-weight: 500;
+  }
+
+  .remove-btn {
+    background: transparent;
+    border: none;
+    color: #6b7094;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 4px;
+    flex-shrink: 0;
+  }
+  .remove-btn:hover { color: #ff6b89; }
+
+  .counter {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 13px;
+    color: #4a4e68;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="badge">💡 sem pressão, só anota</div>
+    <h1>Próximos <span>projetos</span></h1>
+    <p class="desc">
+      Joga aqui qualquer insight que vier. Sem validar, sem compromisso.
+      Foco agora é o AgendooPro — isso aqui só guarda o que sua cabeça for cuspindo.
+    </p>
+
+    <div class="input-box">
+      <textarea id="ideaInput" placeholder="ex: app que avisa quando vai chover só na sua região..."></textarea>
+      <div class="input-footer">
+        <button class="save-btn" id="saveBtn">Guardar ideia</button>
+      </div>
+    </div>
+
+    <div id="listContainer"><div class="empty-state">Nenhuma ideia ainda. Quando bater aquele "e se...", anota aqui.</div></div>
+    <div id="counter" class="counter"></div>
+  </div>
+
+<script>
+  const STORAGE_KEY = 'agendoopro-ideias-futuras';
+
+  function loadIdeas() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveIdeas(ideas) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(ideas));
+  }
+
+  function formatDate() {
+    return new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  function render() {
+    const ideas = loadIdeas();
+    const listContainer = document.getElementById('listContainer');
+    const counter = document.getElementById('counter');
+
+    if (ideas.length === 0) {
+      listContainer.innerHTML = '<div class="empty-state">Nenhuma ideia ainda. Quando bater aquele "e se...", anota aqui.</div>';
+      counter.textContent = '';
+      return;
+    }
+
+    listContainer.innerHTML = '<div class="idea-list">' + ideas.map(idea => `
+      <div class="idea-card" data-id="${idea.id}">
+        <div style="flex:1">
+          <div class="idea-text"></div>
+          <div class="idea-date">${idea.date}</div>
+        </div>
+        <button class="remove-btn" data-id="${idea.id}" aria-label="Remover ideia">×</button>
+      </div>
+    `).join('') + '</div>';
+
+    // set text content safely (avoid HTML injection)
+    listContainer.querySelectorAll('.idea-card').forEach(card => {
+      const id = card.getAttribute('data-id');
+      const idea = ideas.find(i => i.id === id);
+      card.querySelector('.idea-text').textContent = idea.text;
+    });
+
+    counter.textContent = ideas.length + (ideas.length === 1 ? ' ideia guardada' : ' ideias guardadas');
+
+    listContainer.querySelectorAll('.remove-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const updated = loadIdeas().filter(i => i.id !== id);
+        saveIdeas(updated);
+        render();
+      });
+    });
+  }
+
+  function addIdea() {
+    const input = document.getElementById('ideaInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const ideas = loadIdeas();
+    ideas.unshift({
+      id: Date.now().toString(),
+      text: text,
+      date: formatDate(),
+    });
+    saveIdeas(ideas);
+    input.value = '';
+    render();
+  }
+
+  document.getElementById('saveBtn').addEventListener('click', addIdea);
+  document.getElementById('ideaInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      addIdea();
+    }
+  });
+
+  render();
+</script>
+
+
+</body></html>
